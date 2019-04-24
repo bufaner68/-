@@ -1,0 +1,43 @@
+{% extends 'base1.html' %}
+{% load staticfiles %}
+{% block content %}
+    <div style="padding-left: 40px; padding-right: 40px; ">
+        <div class="w3ls-title">
+				<h3 class="agileits-title">Comments</h3>
+        </div>
+        <div style="padding-left: 80px; padding-right: 80px;">
+            <div style="float: left">
+                <p>hi!</p>
+                <p>这是学生对{{ teacher.teacher_name }}的评论展示页面！</p>
+                <br>
+                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse</p>
+                <br>
+                <p>cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat</p>
+                <br>
+                <p>cupidatat non proident, sunt in culpa qui officia deserunt mollit</p>
+                <br>
+                <p>anim id est laborum sed lectus tellus, sodales id elit a</p>
+                <br>
+                <p>anim id est laborum sed lectus tellus, sodales id elit a</p>
+                <br>
+                <p>anim id est laborum sed lectus tellus, sodales id elit a</p>
+                <br>
+            </div>
+            <div style="float: right">
+                <p>评价词云展示</p>
+                <img src="{% static 'images/ciyun.jpg' %}"  alt="评价词云" width="600px" height="300px" />
+            </div>
+        <div>
+    </div>
+        <div style="clear: both"></div>
+        <div class="grid_3 grid_5 w3ls">
+				<h3>评论</h3>
+                {% for comment in teacher.comment_set.all %}
+				<div class="alert alert-info" role="alert">
+					<strong>{{ comment.student.student_name }}:</strong> {{ comment.comment }}
+				</div>
+                {% endfor %}
+        </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base1.html' %}
+
+{% block content %}
+
+<div style="padding-left: 30px; padding-right: 30px; ">
+{% if request.session.is_login %}
+    <p>你好,{{ request.session.user_name }}...</p>
+    <br>
+    <p>欢迎来到教师评价数据智能分析系统！！</p>
+    <br>
+    <div class="alert alert-success" role="alert">
+					<strong>下面是教师列表...</strong>
+    </div>
+    <div class="bs-docs-example">
+        <table class="table table-hover">
+            <thead>
+            <th>教师姓名</th>
+            <th>课程名</th>
+            <th>操作</th>
+            </thead>
+            <tbody>
+            {% for line in data %}
+            <tr>
+            <td>{{ line.teacher_name }}</td>
+            <td>{{ line.crouse }}</td>
+            <td><a href="{% url 'login:detail' line.id %}" >评教</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <h1>你尚未登录，只能访问公开内容！</h1>
+    {% endif %}
+</div>
+
+{% endblock %}

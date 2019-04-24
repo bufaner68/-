@@ -1,0 +1,35 @@
+{% extends 'base1.html' %}
+
+{% block content %}
+
+    <div style="padding-left: 30px; padding-right: 30px; ">
+    <div class="banner-1">
+	</div>
+        <br>
+        <div class="w3ls-title">
+				<h3 class="agileits-title w3title1">Teacher Comment</h3>
+			</div>
+        <p><strong>hi!</strong></p>
+        <br>
+        <div class="alert alert-warning" role="alert">
+					<strong>请对{{ teacher.teacher_name }}进行评价...</strong>
+				</div>
+        <div class="span12" style="padding-bottom: 30px">
+			<form action="{% url 'login:add' teacher.id %}" method="post">
+                {% csrf_token %}
+				<fieldset>
+                    <label>评价内容</label><br>
+                    <input type="text" style="height: 100px; width: 600px" name="comment"/>
+                    <br>
+                    <br>
+                    <div style="padding-left: 230px">
+                        <button type="reset" class="btn">清空</button>
+                        <button type="submit" class="btn">提交</button>
+                    </div>
+
+				</fieldset>
+			</form>
+		</div>
+    </div>
+
+{% endblock %}
