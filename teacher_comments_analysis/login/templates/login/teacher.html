@@ -23,14 +23,24 @@
             <tr>
             <td>{{ line.teacher_name }}</td>
             <td>{{ line.crouse }}</td>
+                {% if request.session.is_tea == False %}
             <td><a href="{% url 'login:detail' line.id %}" >评教</a></td>
+                    {% else %}
+                    <td><a href="{% url 'login:results' line.id %}" >查看</a></td>
+            {% endif %}
             </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
 {% else %}
-    <h1>你尚未登录，只能访问公开内容！</h1>
+
+    <div style="padding-left: 200px; padding-right: 200px; padding-bottom: 100px; padding-top: 100px;">
+    <br>
+        <h1>你尚未登录，只能访问公开内容！</h1>
+    <br>
+    </div>
+
     {% endif %}
 </div>
 

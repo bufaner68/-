@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect  # 用于重定向
 from login import models
 from .form import StudentForm
+from .form import TeacherForm
 from .models import Teacher
 from .models import Comment
 from django.shortcuts import get_object_or_404
@@ -25,7 +26,40 @@ def index(request):
     return render(request, 'login/index.html')
 
 
+def tlogin(request):
+    # 判断用户是否已登录
+    if request.session.get('is_login', None):
+        return redirect("/index/")
+    if request.method == 'POST':
+        login_form = TeacherForm(request.POST)
+        # print(username, password)
+        if login_form.is_valid():
+            username = login_form.cleaned_data['Tusername']
+            password = login_form.cleaned_data['Tpassword']
+            # 用户名合法性验证
+            # 密码长度验证
+            # ...
+        try:
+            teacher = models.Teacher.objects.get(teacher_name=username)
+            print("用户名为：", username)
+            if teacher.teacher_password == password:
+                print("密码为：", password)
+                request.session['is_login'] = True
+                request.session['is_tea'] = True
+                request.session['user_id'] = teacher.id
+                request.session['user_name'] = teacher.teacher_name
+                return redirect('/index/')
+            else:
+                print("密码错误！")
+        except:
+            print("用户名不存在！")
+        return render(request, 'login/tlogin.html', locals())
+    login_form = TeacherForm()
+    return render(request, 'login/tlogin.html', locals())
+
+
 def login(request):
+    # 判断用户是否已登录
     if request.session.get('is_login', None):
         return redirect("/index/")
     if request.method == 'POST':
@@ -37,19 +71,20 @@ def login(request):
             # 用户名合法性验证
             # 密码长度验证
             # ...
-        #try:
+        try:
             student = models.Student.objects.get(student_name=username)
             # print("用户名为：", username)
             if student.student_password == password:
                 # print("密码为：", password)
                 request.session['is_login'] = True
+                request.session['is_tea'] = False
                 request.session['user_id'] = student.id
                 request.session['user_name'] = student.student_name
                 return redirect('/index/')
             else:
                 print("密码错误！")
-        #except:
-            #print("用户名不存在！")
+        except:
+            print("用户名不存在！")
         return render(request, 'login/login.html', locals())
     login_form = StudentForm()
     return render(request, 'login/login.html', locals())
@@ -70,7 +105,7 @@ def teacher(request):
         #print(student)
         comment = models.Comment.objects.all()
         #print("评论列表：")
-        print(comment)
+        #print(comment)
         #print(student[0].student_name, student[1].student_name)
         print(comment[0].student, comment[0].comment)
     except:
@@ -79,6 +114,7 @@ def teacher(request):
     return render(request, 'login/teacher.html', {'data': teacher_list})
 
 
+# 生成评价标签词云
 def ciyun(f):
     from wordcloud import WordCloud
     import matplotlib.pyplot as plt
@@ -95,6 +131,7 @@ def ciyun(f):
     wordcloud.to_file('static/images/ciyun.jpg')  # 保存图片
 
 
+# 将原始评价与前期生成的评价标签做相似度计算，对每一条原始评价生成评论标签
 def newdata(l1, a):
     from gensim import models
     all_doc_list = []
@@ -102,7 +139,7 @@ def newdata(l1, a):
         doc_list = [word for word in jieba.cut(doc)]
         all_doc_list.append(doc_list)
 
-    print("分词结果：", all_doc_list)
+    #print("分词结果：", all_doc_list)
     doc_test_list = [word for word in jieba.cut(a)]
 
     # 制作语料库
@@ -143,7 +180,6 @@ def newdata(l1, a):
 
     # 将 语料库doc_test_vec 在 语料库corpus的训练结果 中的 向量表示 与 语料库corpus的 向量表示 做矩阵相似度计算
     sim = index[lsi[doc_test_vec]]
-
     #print("sim", sim, type(sim))
 
     # 对下标和相似度结果进行一个排序,拿出相似度最高的结果
@@ -151,7 +187,7 @@ def newdata(l1, a):
     cc = sorted(enumerate(sim), key=lambda item: -item[1])
     #print(cc)
     text = l1[cc[0][0]]
-    print(a, text)
+    #print(a, text)
     return text
 
 def logout(request):
@@ -159,10 +195,6 @@ def logout(request):
         # 如果本来就未登录，也就没有登出一说
         return redirect("/index/")
     request.session.flush()
-    # 或者使用下面的方法
-    # del request.session['is_login']
-    # del request.session['user_id']
-    # del request.session['user_name']
     return redirect("/index/")
 
 
@@ -199,7 +231,7 @@ def add(request, teacher_id):
     label_list = []
     for comment in teacher.comment_set.all():
         label = newdata(list, comment.comment)
-        print("生成的标签为：", label)
+        #print("生成的标签为：", label)
         label_list.append(label)
     f = " ".join(label_list)
     # 生成词云
@@ -209,11 +241,22 @@ def add(request, teacher_id):
 
 
 def results(request, teacher_id):
-    from gensim import models
+    # 读取
+    items = open("data/myphrase.txt", "r", encoding="utf-8").read()
+    list = items.split()
+    # print(list)
     teacher = get_object_or_404(Teacher, pk=teacher_id)
-    #print("教师评价查询：", teacher.comment_set.all())
-    #print(comment)
-    #return render(request, "login/results.html")
+    # print("教师评价查询：", teacher.comment_set.all())
+
+    # 生成评价标签
+    label_list = []
+    for comment in teacher.comment_set.all():
+        label = newdata(list, comment.comment)
+        print("生成的标签为：", label)
+        label_list.append(label)
+    f = " ".join(label_list)
+    # 生成词云
+    ciyun(f)
     return render(request, "login/results.html", {'teacher': teacher})
 
 
